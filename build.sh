@@ -49,6 +49,7 @@ esac
 
 # Some defines
 KERNEL_DIR=`pwd`
+KERNEL_PATH="./arch/arm/boot/zImage"
 KERNEL_INITRD_DIR="../initramfs"
 KERNEL_INITRD_GIT="https://github.com/sgt7/p1000-initramfs-cm9.git"
 
