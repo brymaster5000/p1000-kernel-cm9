@@ -16,6 +16,7 @@ echo -e "${txtblu}#      GALAXYTAB KERNEL BUILDSCRIPT      #"
 echo -e "${txtblu}#                                        #"
 echo -e "${txtblu}##########################################"
 echo -e "\r\n ${txtrst}"
+echo ""
 
 # Starting Timer
 START=$(date +%s)
@@ -46,20 +47,12 @@ case "$DEVICE" in
 		;;
 esac
 
-# The real build starts now
-if [ ! "$1" = "" ] ; then
-make -j$THREADS ARCH=arm $DEFCONFIG
-make -j$THREADS
-fi
-
-# Make it into a boot.img
-# ty nubecoder for this :)
-# defines
+# Some defines
 KERNEL_DIR=`pwd`
-KERNEL_PATH="./arch/arm/boot/zImage"
 KERNEL_INITRD_DIR="../initramfs"
 KERNEL_INITRD_GIT="https://github.com/sgt7/p1000-initramfs-cm9.git"
 
+# Check if initramfs is present, if not, then clone it
 if [ ! -d $KERNEL_INITRD_DIR ]; then
 	cd ..
 	git clone $KERNEL_INITRD_GIT initramfs
@@ -67,8 +60,48 @@ if [ ! -d $KERNEL_INITRD_DIR ]; then
 fi
 
 # .git is huge!
-mv $KERNEL_INITRD_DIR/.git DONOTLOOKATME
+echo ""
+echo -e "${txtgrn} MOVING .git TO SAFE LOCATION "
+echo -e "\r\n ${txtrst}"
 
+mv $KERNEL_INITRD_DIR/.git ~/DONOTLOOKATME
+
+if [ ! "$1" = "" ] ; then
+echo ""
+echo -e "${txtgrn} MAKING DEFCONFIG "
+echo -e "\r\n ${txtrst}"
+
+make -j$THREADS ARCH=arm $DEFCONFIG
+fi
+
+# Don't forget to build the MODULES
+if [ ! "$1" = "" ] ; then
+echo ""
+echo -e "${txtgrn} BUILDING MODULES AND COPYING THEM TO RAMDISK "
+echo -e "\r\n ${txtrst}"
+
+make -j$THREADS modules
+
+echo ""
+
+# Copy the modules into the ramdisk
+find . -iname *.ko | xargs cp -frvt ../initramfs/lib/modules/
+/opt/toolchains/arm-2009q3/bin/arm-none-eabi-strip --strip-debug ../initramfs/lib/modules/* 
+sleep 2
+fi
+
+# The real build starts now
+if [ ! "$1" = "" ] ; then
+echo ""
+echo -e "${txtgrn} BUILDING KERNEL "
+echo -e "\r\n ${txtrst}"
+
+make -j$THREADS
+
+fi
+
+# Make it into a boot.img
+# ty nubecoder for this :)
 # Function
 function PACKAGE_BOOTIMG()
 {
@@ -97,6 +130,9 @@ function PACKAGE_BOOTIMG()
 
 # Main
 if [ ! "$1" = "" ] ; then
+echo ""
+echo -e "${txtgrn} MAKING KERNEL INTO A BOOT.IMG FILE "
+echo -e "\r\n ${txtrst}"
 PACKAGE_BOOTIMG "$KERNEL_PATH" "$KERNEL_INITRD_DIR"
 if [ $? != 0 ] ; then
 	echo -e "${txtred} $ERROR_MSG"
@@ -106,7 +142,11 @@ fi
 fi
 
 # move it back just in case
-mv DONOTLOOKATME $KERNEL_INITRD_DIR/.git
+echo ""
+echo -e "${txtgrn} MOVING .git BACK "
+echo -e "\r\n ${txtrst}"
+
+mv ~/DONOTLOOKATME $KERNEL_INITRD_DIR/.git
 
 # The end!
 END=$(date +%s)
