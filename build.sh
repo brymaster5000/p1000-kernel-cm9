@@ -76,20 +76,20 @@ make -j$THREADS ARCH=arm $DEFCONFIG
 fi
 
 # Don't forget to build the MODULES
-if [ ! "$1" = "" ] ; then
-echo ""
-echo -e "${txtgrn} BUILDING MODULES AND COPYING THEM TO RAMDISK "
-echo -e "\r\n ${txtrst}"
+#if [ ! "$1" = "" ] ; then
+#echo ""
+#echo -e "${txtgrn} BUILDING MODULES AND COPYING THEM TO RAMDISK "
+#echo -e "\r\n ${txtrst}"
 
-make -j$THREADS modules
+#make -j$THREADS modules
 
-echo ""
+#echo ""
 
 # Copy the modules into the ramdisk
-find . -iname *.ko | xargs cp -frvt ../initramfs/lib/modules/
-/opt/toolchains/arm-2009q3/bin/arm-none-eabi-strip --strip-debug ../initramfs/lib/modules/* 
-sleep 2
-fi
+#find . -iname *.ko | xargs cp -frvt ../initramfs/lib/modules/
+#/opt/toolchains/arm-2009q3/bin/arm-none-eabi-strip --strip-debug ../initramfs/lib/modules/* 
+#sleep 2
+#fi
 
 # The real build starts now
 if [ ! "$1" = "" ] ; then
