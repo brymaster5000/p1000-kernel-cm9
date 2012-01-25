@@ -50,6 +50,7 @@ esac
 KERNEL_DIR=`pwd`
 KERNEL_INITRD_DIR="../initramfs"
 KERNEL_INITRD_GIT="https://github.com/sgt7/p1000-initramfs-cm9.git"
+INITSOURCE=`grep CONFIG_INITRAMFS_SOURCE arch/arm/configs/$DEFCONFIG `
 
 # Check if initramfs is present, if not, then clone it
 if [ ! -d $KERNEL_INITRD_DIR ]; then
@@ -61,6 +62,10 @@ fi
 # .git is huge!
 mv $KERNEL_INITRD_DIR/.git DONOTLOOKATME
 
+echo -e "${txtblu} Checking if your initramfs path is correct...."
+if [ ! "$INITSOURCE" = "CONFIG_INITRAMFS_SOURCE="../initramfs"" ]; then
+	sed -i "s|CONFIG_INITRAMFS_SOURCE="usr/galaxytab_initramfs.list"|CONFIG_INITRAMFS_SOURCE="../initramfs"|" arch/arm/configs/$DEFCONFIG
+fi
 
 # The real build starts now
 if [ ! "$1" = "" ] ; then

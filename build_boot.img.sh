@@ -52,6 +52,7 @@ KERNEL_DIR=`pwd`
 KERNEL_PATH="./arch/arm/boot/zImage"
 KERNEL_INITRD_DIR="../initramfs"
 KERNEL_INITRD_GIT="https://github.com/sgt7/p1000-initramfs-cm9.git"
+INITSOURCE=`grep CONFIG_INITRAMFS_SOURCE arch/arm/configs/$DEFCONFIG `
 
 # Check if initramfs is present, if not, then clone it
 if [ ! -d $KERNEL_INITRD_DIR ]; then
@@ -114,6 +115,10 @@ function PACKAGE_BOOTIMG()
 		ERROR_MSG="Error: PACKAGE_BOOTIMG - zImage does not exist!"
 		return 1
 	else
+		echo -e "${txtblu} Checking if your initramfs path is correct...."
+		if [ "$INITSOURCE" = "CONFIG_INITRAMFS_SOURCE="../initramfs"" ]; then
+			sed -i "s|CONFIG_INITRAMFS_SOURCE="../initramfs"|CONFIG_INITRAMFS_SOURCE="usr/galaxytab_initramfs.list"|" arch/arm/configs/$DEFCONFIG
+		fi
 		echo -e "${txtblu} Creating ramdisk.img"
 		./tools/mkbootfs $KERNEL_INITRD_DIR | ./tools/minigzip > ramdisk.img
 		if [ -f boot.img ] ; then
