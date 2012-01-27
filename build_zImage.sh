@@ -60,12 +60,12 @@ if [ ! -d $KERNEL_INITRD_DIR ]; then
 fi
 
 # .git is huge!
-mv $KERNEL_INITRD_DIR/.git DONOTLOOKATME
+mv $KERNEL_INITRD_DIR/.git ~/DONOTLOOKATME
 
-echo -e "${txtblu} Checking if your initramfs path is correct...."
-if [ ! "$INITSOURCE" = "CONFIG_INITRAMFS_SOURCE="../initramfs"" ]; then
-	sed -i "s|CONFIG_INITRAMFS_SOURCE="usr/galaxytab_initramfs.list"|CONFIG_INITRAMFS_SOURCE="../initramfs"|" arch/arm/configs/$DEFCONFIG
-fi
+#echo -e "${txtblu} Checking if your initramfs path is correct...."
+#if [ ! "$INITSOURCE" = "CONFIG_INITRAMFS_SOURCE="../initramfs"" ]; then
+#	sed -i "s|CONFIG_INITRAMFS_SOURCE="usr/galaxytab_initramfs.list"|CONFIG_INITRAMFS_SOURCE="../initramfs"|" arch/arm/configs/$DEFCONFIG
+#fi
 
 # The real build starts now
 if [ ! "$1" = "" ] ; then
@@ -74,7 +74,7 @@ make -j$THREADS
 fi
 
 # move it back just in case
-mv DONOTLOOKATME $KERNEL_INITRD_DIR/.git
+mv ~/DONOTLOOKATME $KERNEL_INITRD_DIR/.git
 
 # The end!
 END=$(date +%s)
