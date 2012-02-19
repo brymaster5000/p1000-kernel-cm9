@@ -62,10 +62,13 @@ fi
 # .git is huge!
 mv $KERNEL_INITRD_DIR/.git ~/DONOTLOOKATME
 
-#echo -e "${txtblu} Checking if your initramfs path is correct...."
-#if [ ! "$INITSOURCE" = "CONFIG_INITRAMFS_SOURCE="../initramfs"" ]; then
-#	sed -i "s|CONFIG_INITRAMFS_SOURCE="usr/galaxytab_initramfs.list"|CONFIG_INITRAMFS_SOURCE="../initramfs"|" arch/arm/configs/$DEFCONFIG
-#fi
+echo -e "${txtblu} Checking if your initramfs path is correct....${txtrst}"
+if [ ! "$INITSOURCE" = "CONFIG_INITRAMFS_SOURCE=\"../initramfs\"" ]; then
+echo -e "${txtblu}The initramfs path was: ""${txtred}$INITSOURCE${txtrst}"
+	sed -i "s|CONFIG_INITRAMFS_SOURCE=\".*\"|CONFIG_INITRAMFS_SOURCE=\"../initramfs\"|" arch/arm/configs/$DEFCONFIG
+INITSOURCE=`grep CONFIG_INITRAMFS_SOURCE arch/arm/configs/$DEFCONFIG `
+echo -e "${txtblu}Now changed to: ""${txtgrn}$INITSOURCE${txtrst}"
+fi
 
 # The real build starts now
 if [ ! "$1" = "" ] ; then

@@ -68,6 +68,12 @@ echo -e "\r\n ${txtrst}"
 
 mv $KERNEL_INITRD_DIR/.git ~/DONOTLOOKATME
 
+echo -e "${txtblu} Checking if your initramfs path is correct...."
+	echo -e "${txtblu}The initramfs path was: ""${txtred}$INITSOURCE${txtrst}"
+	sed -i "s|CONFIG_INITRAMFS_SOURCE=\".*\"|CONFIG_INITRAMFS_SOURCE=\"usr/galaxytab_initramfs.list\"|" arch/arm/configs/$DEFCONFIG
+	INITSOURCE=`grep CONFIG_INITRAMFS_SOURCE arch/arm/configs/$DEFCONFIG `
+	echo -e "${txtblu}Now changed to: ""${txtgrn}$INITSOURCE${txtrst}"
+
 if [ ! "$1" = "" ] ; then
 echo ""
 echo -e "${txtgrn} MAKING DEFCONFIG "
@@ -77,20 +83,20 @@ make -j$THREADS ARCH=arm $DEFCONFIG
 fi
 
 # Don't forget to build the MODULES
-#if [ ! "$1" = "" ] ; then
-#echo ""
-#echo -e "${txtgrn} BUILDING MODULES AND COPYING THEM TO RAMDISK "
-#echo -e "\r\n ${txtrst}"
+if [ ! "$1" = "" ] ; then
+echo ""
+echo -e "${txtgrn} BUILDING MODULES AND COPYING THEM TO RAMDISK "
+echo -e "\r\n ${txtrst}"
 
-#make -j$THREADS modules
+make -j$THREADS modules
 
-#echo ""
+echo ""
 
 # Copy the modules into the ramdisk
-#find . -iname *.ko | xargs cp -frvt ../initramfs/lib/modules/
-#/opt/toolchains/arm-2009q3/bin/arm-none-eabi-strip --strip-debug ../initramfs/lib/modules/* 
-#sleep 2
-#fi
+find . -iname *.ko | xargs cp -frvt ../initramfs/lib/modules/
+/opt/toolchains/arm-2009q3/bin/arm-none-eabi-strip --strip-debug ../initramfs/lib/modules/* 
+sleep 2
+fi
 
 # The real build starts now
 if [ ! "$1" = "" ] ; then
@@ -115,10 +121,6 @@ function PACKAGE_BOOTIMG()
 		ERROR_MSG="Error: PACKAGE_BOOTIMG - zImage does not exist!"
 		return 1
 	else
-		echo -e "${txtblu} Checking if your initramfs path is correct...."
-		if [ "$INITSOURCE" = "CONFIG_INITRAMFS_SOURCE="../initramfs"" ]; then
-			sed -i "s|CONFIG_INITRAMFS_SOURCE="../initramfs"|CONFIG_INITRAMFS_SOURCE="usr/galaxytab_initramfs.list"|" arch/arm/configs/$DEFCONFIG
-		fi
 		echo -e "${txtblu} Creating ramdisk.img"
 		./tools/mkbootfs $KERNEL_INITRD_DIR | ./tools/minigzip > ramdisk.img
 		if [ -f boot.img ] ; then
