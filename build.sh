@@ -22,10 +22,28 @@ setup ()
         CCACHE=""
     fi
 
-    CROSS_PREFIX="$ANDROID_BUILD_TOP/prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/arm-eabi-"
+CROSS_PREFIX="$ANDROID_BUILD_TOP/prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/arm-eabi-"
 }
 
-build ()
+build_zImage ()
+{
+    local target=$1
+    echo "Building for $target"
+    local target_dir="$BUILD_DIR/$target"
+    local module
+    mv $ANDROID_BUILD_TOP/kernel/samsung/initramfs/.git ~/DONOTLOOKATME
+    mka -C "$KERNEL_DIR" O="$target_dir" ${target}\_cm9_defconfig HOSTCC="$CCACHE gcc"
+    mka -C "$KERNEL_DIR" O="$target_dir" HOSTCC="$CCACHE gcc" CROSS_COMPILE="$CCACHE $CROSS_PREFIX" zImage modules
+    cp "$target_dir"/arch/arm/boot/zImage $ANDROID_BUILD_TOP/device/samsung/galaxytab/kernel-$target
+    mv ~/DONOTLOOKATME $ANDROID_BUILD_TOP/kernel/samsung/initramfs/.git
+}
+
+initrd_source_zImage ()
+{
+    sed -i "s|CONFIG_INITRAMFS_SOURCE=\".*\"|CONFIG_INITRAMFS_SOURCE=\"$ANDROID_BUILD_TOP/kernel/samsung/initramfs\"|" arch/arm/configs/*_cm9_defconfig
+}
+
+build_bootimg ()
 {
     local target=$1
     echo "Building for $target"
@@ -38,6 +56,11 @@ build ()
     mka -C "$KERNEL_DIR" O="$target_dir" ${target}\_cm9_defconfig HOSTCC="$CCACHE gcc"
     mka -C "$KERNEL_DIR" O="$target_dir" HOSTCC="$CCACHE gcc" CROSS_COMPILE="$CCACHE $CROSS_PREFIX" zImage modules
     cp "$target_dir"/arch/arm/boot/zImage $ANDROID_BUILD_TOP/device/samsung/galaxytab/kernel-$target
+}
+
+initrd_source_bootimg ()
+{
+    sed -i "s|CONFIG_INITRAMFS_SOURCE=\".*\"|CONFIG_INITRAMFS_SOURCE=\"usr/galaxytab_initramfs.list\"|" arch/arm/configs/*_cm9_defconfig
 }
 
 setup
@@ -54,8 +77,14 @@ fi
 
 START=$(date +%s)
 
-for target in "${targets[@]}" ; do 
-    build $target
+for target in "${targets[@]}" ; do
+if [ "$1" = bootimg ] ; then
+    initrd_source_bootimg
+    build_bootimg $target
+else
+    initrd_source_zImage
+    build_zImage $target
+fi
 done
 
 END=$(date +%s)
