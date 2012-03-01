@@ -12,6 +12,10 @@ setup ()
     BUILD_DIR="$KERNEL_DIR/build"
     #MODULES=("fs/cifs/cifs.ko" "fs/fuse/fuse.ko" "fs/nls/nls_utf8.ko")
 
+    if [ ! -d $BUILD_DIR ]; then
+        mkdir -p "$KERNEL_DIR/build"
+    fi
+
     if [ x = "x$NO_CCACHE" ] && ccache -V &>/dev/null ; then
         CCACHE=ccache
         CCACHE_BASEDIR="$KERNEL_DIR"
